@@ -1,6 +1,6 @@
 import type { RouterTypes } from '../types'
 import { createContext, useContext, useState, useEffect } from 'react'
-import ui from '@vixen-front/ui'
+import { ErrorFrame } from '@vixen-front/ui'
 
 export function create(): RouterTypes.Router {
     const thisRoutes = (() => {
@@ -16,7 +16,7 @@ export function create(): RouterTypes.Router {
 
         function getRoute(key: string) {
             if (hasRoute(key)) return _thisRoutes![key]
-            return <ui.ErrorFrame message={useRouter().error} />
+            return <ErrorFrame message={useRouter().error} />
         }
 
         return {

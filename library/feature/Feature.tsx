@@ -2,7 +2,7 @@ import type { RouterTypes, GlobalStateTypes } from '../types'
 
 import { useEffect } from 'react'
 import initFeature from './initFeature'
-import ui from '@vixen-front/ui'
+import { ErrorFrame } from '@vixen-front/ui'
 
 interface FeatureProps {
     content:
@@ -15,7 +15,7 @@ interface FeatureProps {
 
 export default function Feature({ content }: FeatureProps) {
     useEffect(initFeature, [])
-    let feature: JSX.Element = <ui.ErrorFrame />
+    let feature: JSX.Element = <ErrorFrame />
 
     if ('router' in content) {
         const routedFeature = (
