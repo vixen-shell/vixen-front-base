@@ -45,7 +45,14 @@ export function create(): RouterTypes.Router {
         }
 
         useEffect(() => {
-            updateRoute('main')
+            function getUrlRouteParam() {
+                const urlParams = new URLSearchParams(window.location.search)
+                return urlParams.get('route')
+            }
+
+            const routeName = getUrlRouteParam()
+
+            updateRoute(routeName ? routeName : 'main')
         }, [])
 
         return (
