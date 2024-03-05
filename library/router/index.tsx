@@ -38,10 +38,18 @@ export function create(): RouterTypes.Router {
         const [route, setRoute] = useState<string>('')
         const [error, setError] = useState<string>('')
 
-        const updateRoute = (key: string) => {
-            const route = thisRoutes.hasRoute(key) && key
-            if (!route) setError(`Route '${key}' not found.`)
-            setRoute(route ? key : 'error')
+        const updateRoute = (key: string | null) => {
+            if (!key) {
+                setError('Missing route parameter.')
+                setRoute('error')
+                return
+            }
+            if (!thisRoutes.hasRoute(key)) {
+                setError(`Route '${key}' not found.`)
+                setRoute('error')
+                return
+            }
+            setRoute(key)
         }
 
         useEffect(() => {
@@ -52,7 +60,7 @@ export function create(): RouterTypes.Router {
 
             const routeName = getUrlRouteParam()
 
-            updateRoute(routeName ? routeName : 'main')
+            updateRoute(routeName)
         }, [])
 
         return (

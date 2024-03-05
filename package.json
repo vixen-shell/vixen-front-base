@@ -28,7 +28,6 @@
         "@typescript-eslint/eslint-plugin": "^6.14.0",
         "@typescript-eslint/parser": "^6.14.0",
         "@vitejs/plugin-react": "^4.2.1",
-        "@vixen-front/root": "https://github.com/vixen-shell/vixen-front-root-package.git",
         "@vixen-front/ui": "https://github.com/vixen-shell/vixen-front-ui-package.git",
         "eslint": "^8.55.0",
         "eslint-plugin-react-hooks": "^4.6.0",

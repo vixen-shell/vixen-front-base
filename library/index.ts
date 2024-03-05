@@ -1,6 +1,5 @@
-import * as Router from './router'
-import * as GlobalState from './globalState'
-import * as Features from './feature'
-
-export { Router, GlobalState, Features }
+export * as Root from './root'
+export * as Router from './router'
+export * as GlobalState from './globalState'
+export * as Features from './feature'
 export * from './types'
