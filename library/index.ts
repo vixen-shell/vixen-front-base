@@ -1,5 +1,5 @@
+export { RouterLink, useRouter } from './router'
+export { useGlobalState } from './state'
 export * as Root from './root'
-export * as Router from './router'
-export * as GlobalState from './globalState'
 export * as Features from './feature'
 export * from './types'

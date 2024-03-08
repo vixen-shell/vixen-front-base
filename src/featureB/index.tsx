@@ -1,2 +1,8 @@
 import { Features } from '../__library'
-export default Features.create({ feature: <p>Hello Extension B</p> })
+
+const { feature, router } = Features.create({
+    main: <p>Hello Extension B</p>,
+})
+
+export { router }
+export default feature

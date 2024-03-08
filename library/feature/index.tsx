@@ -1,14 +1,18 @@
-import type { RouterTypes, GlobalStateTypes } from '../types'
+import type { RouteItems } from '../router'
+import type { GlobalStateType } from '../state'
+
+import { Routes } from '../router'
+import { GlobalState } from '../state'
 
 import Feature from './Feature'
 
-export function create(
-    content:
-        | {
-              router: RouterTypes.Router
-              globalState?: GlobalStateTypes.GlobalState
-          }
-        | { feature: JSX.Element }
-) {
-    return <Feature content={content} />
+export function create(routes: RouteItems) {
+    Routes.define(routes)
+
+    const feature = (initialRoute: string, initialState: GlobalStateType) => {
+        GlobalState.initialState = initialState
+        return <Feature initialRoute={initialRoute} />
+    }
+
+    return feature
 }

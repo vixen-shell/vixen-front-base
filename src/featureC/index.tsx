@@ -1,10 +1,12 @@
-import { Router, Features } from '../__library'
+import { Features } from '../__library'
 
-export const router = Router.create()
+import Main from './main'
+import Test from './test'
 
-router.setRoutes({
-    main: <router.Link route="test">Hello Extension C</router.Link>,
-    test: <router.Link route="main">Hello Link !!</router.Link>,
+const { feature, router } = Features.create({
+    main: <Main />,
+    test: <Test />,
 })
 
-export default Features.create({ router })
+export { router }
+export default feature

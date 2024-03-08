@@ -1,16 +1,14 @@
-import { router, globalState } from '..'
+import { RouterLink } from '../../__library'
 import { Frame } from '@vixen-front/ui'
 
 export default function Main() {
-    const { get } = globalState.use()
-
     return (
         <Frame>
             <p>Test Route from feature A!</p>
-            <p>Hello {get('user')}!</p>
-            <router.Link route="main">
+            <p>Hello Noha!</p>
+            <RouterLink route="main">
                 Click to return to the Main Route ...
-            </router.Link>
+            </RouterLink>
         </Frame>
     )
 }

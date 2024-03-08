@@ -1,24 +1,24 @@
-import { router, globalState } from '..'
+import { RouterLink } from '../../__library'
+import { useGlobalState } from '../../__library'
 import { Frame } from '@vixen-front/ui'
 
 export default function Main() {
-    const { get, set } = globalState.use()
-
-    const handleClick = () => {
-        set('user', 'Noha')
-    }
+    const { getStateItem, setStateItem } = useGlobalState()
 
     return (
         <Frame direction="column" padding={20} gap={20}>
             <Frame height={{ ratio: 30 }} gap={20}>
                 <p>Main Route from feature A!</p>
-                <p>Hello {get('user')}!</p>
-                <button onClick={handleClick}>Mais, je suis Noha !!!</button>
+                <p>Hello Noha!</p>
+                <p>{getStateItem('string')}</p>
+                <button onClick={() => setStateItem('string', 'AAA !!!')}>
+                    click me
+                </button>
             </Frame>
             <Frame>
-                <router.Link route="test">
+                <RouterLink route="test">
                     Click to get Test Route ...
-                </router.Link>
+                </RouterLink>
             </Frame>
         </Frame>
     )
