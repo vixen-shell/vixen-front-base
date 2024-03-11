@@ -3,20 +3,13 @@ import type { GlobalStateType } from '../state'
 
 import { Routes } from '../router'
 import { GlobalState } from '../state'
-import { Api } from '../api'
 
 import Feature from './Feature'
 
 export function create(routes: RouteItems) {
     Routes.define(routes)
 
-    const feature = (
-        featureName: string,
-        initialRoute: string,
-        initialState: GlobalStateType,
-        clientId: string
-    ) => {
-        Api.init(featureName, clientId)
+    const feature = (initialRoute: string, initialState: GlobalStateType) => {
         GlobalState.initialState = initialState
         return <Feature initialRoute={initialRoute} />
     }

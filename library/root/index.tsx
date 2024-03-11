@@ -2,13 +2,11 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { ErrorFrame } from '@vixen-front/ui'
 import { GlobalStateType } from '../state'
-import { error } from 'console'
+import { Api } from '../api'
 
 type FeatureCallback = (
-    featureName: string,
     initialRoute: string,
-    initialState: GlobalStateType,
-    clientId: string
+    initialState: GlobalStateType
 ) => JSX.Element
 
 function getUrlParams() {
@@ -24,34 +22,26 @@ function getUrlParams() {
 export function create(container: HTMLElement) {
     const urlParams = getUrlParams()
 
+    const ErrorFeature = (message: string) => {
+        return <ErrorFrame message={message} />
+    }
+
     async function getFeatureByImport(
         importCallback: (feature: string | null) => Promise<any>
-    ): Promise<FeatureCallback | void> {
+    ): Promise<FeatureCallback> {
         const featureName = urlParams.featureName
+
+        if (!featureName) {
+            throw new Error('Missing feature parameter !')
+        }
 
         try {
             const feature = (await importCallback(featureName)).default
-
-            if (!feature) {
-                throw new Error(
-                    `'${featureName}' does not export feature as default !`
-                )
-            } else {
-                return feature as FeatureCallback
-            }
-        } catch (error) {
-            console.error(error)
-            return
+            if (!feature) throw new Error()
+            return feature as FeatureCallback
+        } catch (error: any) {
+            throw new Error(`Feature '${urlParams.featureName}' not found !`)
         }
-    }
-
-    const ErrorFeature = (message?: string) => {
-        if (!message)
-            message = urlParams.featureName
-                ? `Feature '${urlParams.featureName}' not found !`
-                : 'Missing feature parameter !'
-
-        return <ErrorFrame message={message} />
     }
 
     function insertFeature(feature: JSX.Element) {
@@ -64,59 +54,49 @@ export function create(container: HTMLElement) {
         )
     }
 
-    function initFeature(feature: FeatureCallback | void) {
-        if (!feature) {
-            insertFeature(ErrorFeature())
-        } else {
-            fetch(
-                `http://localhost:6481/feature/${urlParams.featureName}/state`
-            )
-                .then((response) => {
-                    if (!response.ok) {
-                        switch (response.status) {
-                            case 409: {
-                                return response.json().then((data) => {
-                                    throw new Error(data.message + '.')
-                                })
-                            }
-                            default: {
-                                throw new Error('Unexpected error')
-                            }
-                        }
-                    }
-                    return response.json()
-                })
-                .then((data) => {
-                    if ('state' in data) {
-                        const initialState = data.state
-                        console.log(urlParams.clientId)
+    async function initFeature(feature: FeatureCallback) {
+        if (!urlParams.clientId) {
+            throw new Error('Missing client parameter !')
+        }
 
-                        insertFeature(
-                            feature(
-                                urlParams.featureName!,
-                                urlParams.initialRoute!,
-                                initialState,
-                                urlParams.clientId!
-                            )
-                        )
-                    } else {
-                        throw new Error('Missing initial State.')
-                    }
-                })
-                .catch((error) => {
-                    insertFeature(ErrorFeature(error.message))
-                    console.error(error)
-                })
+        Api.init(urlParams.featureName!, urlParams.clientId!)
+
+        const response = await fetch(Api.routes.featureState())
+
+        if (!response.ok) {
+            switch (response.status) {
+                case 409: {
+                    return response.json().then((data) => {
+                        throw new Error(data.message + '.')
+                    })
+                }
+                default: {
+                    throw new Error('Unexpected error')
+                }
+            }
+        }
+
+        const data: any = await response.json()
+
+        if ('state' in data) {
+            const initialState = data.state
+            console.log(urlParams.clientId)
+
+            insertFeature(feature(urlParams.initialRoute!, initialState))
+        } else {
+            throw new Error('Missing initial State.')
         }
     }
 
-    function render(parameters: {
-        importCallback: (feature: string | null) => Promise<any>
+    async function render(parameters: {
+        importCallback: (featureName: string | null) => Promise<any>
     }) {
-        if ('importCallback' in parameters) {
-            getFeatureByImport(parameters.importCallback).then((feature) => {
-                initFeature(feature)
-            })
+        try {
+            const feature = await getFeatureByImport(parameters.importCallback)
+            await initFeature(feature)
+        } catch (error: any) {
+            console.error(error)
+            insertFeature(ErrorFeature(error.message))
         }
     }
 
