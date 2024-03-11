@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useReducer } from 'react'
+import React, { createContext, useContext, useEffect, useReducer } from 'react'
+import type { EventData } from '../api'
+import { Api } from '../api'
 
 type GlobalStateItemType = string | number | boolean | null
 export type GlobalStateType = { [key: string]: GlobalStateItemType }
@@ -60,6 +62,20 @@ export const GlobalStateProvider: React.FC<{
         GlobalState.initialState
     )
 
+    useEffect(() => {
+        function onUpdateStateEvent(data: EventData.StateItem) {
+            dispatch({
+                type: `update_${data.key}`,
+                payload: data.value,
+            })
+        }
+        Api.events.addListener('UPDATE_STATE', onUpdateStateEvent)
+
+        return () => {
+            Api.events.removeListener('UPDATE_STATE', onUpdateStateEvent)
+        }
+    }, [])
+
     return (
         <Context.Provider value={{ state, dispatch }}>
             {children}
@@ -74,15 +90,19 @@ export const useGlobalState = () => {
             'useFeatureState must be used within a FeatureStateProvider.'
         )
 
-    const { state, dispatch } = context
+    const { state } = context
 
     const getStateItem = (key: string) => {
         return state[key]
     }
 
     const setStateItem = (key: string, value: GlobalStateItemType) => {
-        dispatch({ type: `update_${key}`, payload: value })
+        Api.events.send({ id: 'SET_STATE', data: { key, value } })
     }
 
-    return { getStateItem, setStateItem }
+    const saveState = () => {
+        Api.events.send({ id: 'SAVE_STATE' })
+    }
+
+    return { getStateItem, setStateItem, saveState }
 }

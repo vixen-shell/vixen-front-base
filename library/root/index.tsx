@@ -5,8 +5,10 @@ import { GlobalStateType } from '../state'
 import { error } from 'console'
 
 type FeatureCallback = (
+    featureName: string,
     initialRoute: string,
-    initialState: GlobalStateType
+    initialState: GlobalStateType,
+    clientId: string
 ) => JSX.Element
 
 function getUrlParams() {
@@ -15,6 +17,7 @@ function getUrlParams() {
     return {
         featureName: urlParams.get('feature'),
         initialRoute: urlParams.get('route'),
+        clientId: urlParams.get('client_id'),
     }
 }
 
@@ -86,9 +89,15 @@ export function create(container: HTMLElement) {
                 .then((data) => {
                     if ('state' in data) {
                         const initialState = data.state
+                        console.log(urlParams.clientId)
 
                         insertFeature(
-                            feature(urlParams.initialRoute!, initialState)
+                            feature(
+                                urlParams.featureName!,
+                                urlParams.initialRoute!,
+                                initialState,
+                                urlParams.clientId!
+                            )
                         )
                     } else {
                         throw new Error('Missing initial State.')

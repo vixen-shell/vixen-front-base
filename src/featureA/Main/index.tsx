@@ -3,7 +3,7 @@ import { useGlobalState } from '../../__library'
 import { Frame } from '@vixen-front/ui'
 
 export default function Main() {
-    const { getStateItem, setStateItem } = useGlobalState()
+    const { getStateItem, setStateItem, saveState } = useGlobalState()
 
     return (
         <Frame direction="column" padding={20} gap={20}>
@@ -11,9 +11,18 @@ export default function Main() {
                 <p>Main Route from feature A!</p>
                 <p>Hello Noha!</p>
                 <p>{getStateItem('string')}</p>
-                <button onClick={() => setStateItem('string', 'AAA !!!')}>
+                <button
+                    onClick={() => {
+                        if (getStateItem('string') === 'OOO !!!') {
+                            setStateItem('string', 'AAA !!!')
+                        } else {
+                            setStateItem('string', 'OOO !!!')
+                        }
+                    }}
+                >
                     click me
                 </button>
+                <button onClick={() => saveState()}>Save State</button>
             </Frame>
             <Frame>
                 <RouterLink route="test">
