@@ -4,6 +4,8 @@ import { ErrorFrame } from '@vixen-front/ui'
 import { GlobalStateType } from '../state'
 import { Api } from '../api'
 
+type ImportCallback = (featureName: string | null) => Promise<any>
+
 type FeatureCallback = (
     initialRoute: string,
     initialState: GlobalStateType
@@ -26,8 +28,8 @@ export function create(container: HTMLElement) {
         return <ErrorFrame message={message} />
     }
 
-    async function getFeatureByImport(
-        importCallback: (feature: string | null) => Promise<any>
+    async function getFeature(
+        importCallback: ImportCallback
     ): Promise<FeatureCallback> {
         const featureName = urlParams.featureName
 
@@ -55,44 +57,17 @@ export function create(container: HTMLElement) {
     }
 
     async function initFeature(feature: FeatureCallback) {
-        if (!urlParams.clientId) {
-            throw new Error('Missing client parameter !')
-        }
+        if (!urlParams.clientId) throw new Error('Missing client parameter !')
 
-        Api.init(urlParams.featureName!, urlParams.clientId!)
+        await Api.init(urlParams.featureName!, urlParams.clientId!)
 
-        const response = await fetch(Api.routes.featureState())
-
-        if (!response.ok) {
-            switch (response.status) {
-                case 409: {
-                    return response.json().then((data) => {
-                        throw new Error(data.message + '.')
-                    })
-                }
-                default: {
-                    throw new Error('Unexpected error')
-                }
-            }
-        }
-
-        const data: any = await response.json()
-
-        if ('state' in data) {
-            const initialState = data.state
-            console.log(urlParams.clientId)
-
-            insertFeature(feature(urlParams.initialRoute!, initialState))
-        } else {
-            throw new Error('Missing initial State.')
-        }
+        const initialState = await Api.getFeatureState()
+        insertFeature(feature(urlParams.initialRoute!, initialState))
     }
 
-    async function render(parameters: {
-        importCallback: (featureName: string | null) => Promise<any>
-    }) {
+    async function render(importCallback: ImportCallback) {
         try {
-            const feature = await getFeatureByImport(parameters.importCallback)
+            const feature = await getFeature(importCallback)
             await initFeature(feature)
         } catch (error: any) {
             console.error(error)

@@ -6,7 +6,7 @@ export namespace EventData {
 }
 
 export namespace Output {
-    export type Ids = 'SET_STATE' | 'SAVE_STATE'
+    export type Ids = 'GET_STATE' | 'SET_STATE' | 'SAVE_STATE'
     export type Data = EventData.StateItem
 
     export type Event = {
