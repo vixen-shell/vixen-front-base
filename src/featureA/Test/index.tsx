@@ -1,4 +1,4 @@
-import { RouterLink } from '../../__library'
+import { Feature } from '../../__library'
 import { Frame } from '@vixen-front/ui'
 
 export default function Main() {
@@ -6,9 +6,9 @@ export default function Main() {
         <Frame>
             <p>Test Route from feature A!</p>
             <p>Hello Noha!</p>
-            <RouterLink route="main">
+            <Feature.Link route="main">
                 Click to return to the Main Route ...
-            </RouterLink>
+            </Feature.Link>
         </Frame>
     )
 }

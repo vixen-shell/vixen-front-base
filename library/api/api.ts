@@ -1,55 +1,142 @@
+import type { EventData } from './eventTypes'
+
 import { ApiRoutes } from './ApiRoutes'
 import { ApiEvents } from './ApiEvents'
 import { GlobalStateType } from '../state'
 
+function $GET<T>(route: string, dataKey: string): () => Promise<T> {
+    if (Api.isInit) {
+        return async (): Promise<T> => {
+            const response = await fetch(route)
+
+            if (!response.ok) {
+                try {
+                    const data = await response.json()
+                    throw new Error(data.message)
+                } catch (error: any) {
+                    throw new Error(error.message)
+                }
+            }
+
+            const data: any = await response.json()
+
+            if (dataKey in data) {
+                return data[dataKey] as T
+            } else {
+                throw new Error(`Unable to acces ${dataKey}`)
+            }
+        }
+    }
+    throw new Error('Api not initialized')
+}
+
 export class Api {
     private static _routes: ApiRoutes | undefined = undefined
     private static _events: ApiEvents | undefined = undefined
+    private static _isInit: boolean = false
 
     static async init(featureName: string, clientId: string) {
         if (!(await Api.ping())) throw new Error('Unable to acces Vixen Api.')
         Api._routes = new ApiRoutes(featureName, clientId)
-        Api._events = new ApiEvents(Api._routes.featureEvents())
+        Api._events = new ApiEvents(Api._routes.FEATURE_PIPE)
+        Api._isInit = true
     }
 
-    static get events(): ApiEvents {
-        if (Api._events) return Api._events
-        throw new Error('Api not initialized.')
-    }
-
-    static get routes(): ApiRoutes {
-        if (Api._routes) return Api._routes
-        throw new Error('Api not initialized.')
+    static get isInit() {
+        return Api._isInit
     }
 
     static async ping(): Promise<Boolean> {
         try {
-            if (!(await fetch(ApiRoutes.ping())).ok) return false
+            if (!(await fetch(ApiRoutes.PING)).ok) return false
             return true
         } catch (error) {
             return false
         }
     }
 
-    static async getFeatureState(): Promise<GlobalStateType> {
-        const response = await fetch(Api.routes.featureState())
+    static get events() {
+        if (Api._events) return Api._events
+        throw new Error('Api not initialized')
+    }
 
-        if (!response.ok) {
-            if (response.status === 409) {
-                return response.json().then((data) => {
-                    throw new Error(data.message)
-                })
-            } else {
-                throw new Error('Unexpected error')
+    private static get routes() {
+        if (Api._routes) return Api._routes
+        throw new Error('Api not initialized')
+    }
+
+    static get featureState() {
+        return $GET<GlobalStateType>(Api.routes.FEATURE_STATE, 'state')
+    }
+
+    static Logger = class {
+        private static _logListener: boolean = false
+
+        private static get logListener() {
+            return Api.Logger._logListener
+        }
+
+        private static set logListener(value: boolean) {
+            const setLogListener = async (value: boolean) => {
+                const logListenerState = $GET<boolean>(
+                    Api.routes.FEATURE_LOG_LISTENER,
+                    'log_listener'
+                )
+                const toggleLogListener = $GET<boolean>(
+                    Api.routes.FEATURE_LOG_LISTENER_TOGGLE,
+                    'log_listener'
+                )
+                if ((await logListenerState()) !== value) {
+                    await toggleLogListener()
+                }
+            }
+
+            setLogListener(value)
+            Api.Logger._logListener = value
+        }
+
+        static async log(log: EventData.Log) {
+            Api.events.send({ id: 'LOG', data: log })
+        }
+
+        static get logs() {
+            return $GET<EventData.Log[]>(Api.routes.LOGS, 'logs')
+        }
+
+        static addListener(callback: (data: EventData.Log) => void) {
+            if (!Api.Logger.logListener) Api.Logger.logListener = true
+            Api.events.addListener('LOG', callback)
+        }
+
+        static removeListener(callback: (data: EventData.Log) => void) {
+            Api.events.removeListener('LOG', callback)
+            if (!Api.events.hasListeners('LOG') && Api.Logger.logListener) {
+                Api.Logger.logListener = false
             }
         }
-
-        const data: any = await response.json()
-
-        if ('state' in data) {
-            return data.state as GlobalStateType
-        } else {
-            throw new Error('Unable to acces any state.')
-        }
     }
+
+    // static get logs() {
+    //     return {
+    //         get: $GET<EventData.Log[]>(Api.routes.LOGS, 'logs'),
+
+    //         isListening: $GET<boolean>(
+    //             Api.routes.FEATURE_LOG_LISTENER,
+    //             'log_listener'
+    //         ),
+
+    //         toggleListening: $GET<boolean>(
+    //             Api.routes.FEATURE_LOG_LISTENER_TOGGLE,
+    //             'log_listener'
+    //         ),
+
+    //         addListener: (callback: (data: EventData.Log) => void) => {
+    //             Api.events.addListener('LOG', callback)
+    //         },
+
+    //         removeListener: (callback: (data: EventData.Log) => void) => {
+    //             Api.events.removeListener('LOG', callback)
+    //         },
+    //     }
+    // }
 }

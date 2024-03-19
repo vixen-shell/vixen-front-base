@@ -10,7 +10,7 @@ export class Routes {
         if (!Routes.items) {
             Routes.items = items
         } else {
-            console.error('Route items are already set.')
+            console.error('Route items are already set')
         }
     }
 
@@ -19,8 +19,8 @@ export class Routes {
             return Routes.items[key]
         } else {
             const message = key
-                ? `Route item '${key}' is not defined.`
-                : 'Missing route parameter.'
+                ? `Route item '${key}' is not defined`
+                : "Missing 'route' parameter"
             console.error(message)
             return <ErrorFrame message={message} />
         }

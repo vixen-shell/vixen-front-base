@@ -34,15 +34,22 @@ export function create(container: HTMLElement) {
         const featureName = urlParams.featureName
 
         if (!featureName) {
-            throw new Error('Missing feature parameter !')
+            throw new Error("Missing 'feature' parameter")
         }
 
         try {
             const feature = (await importCallback(featureName)).default
-            if (!feature) throw new Error()
+            if (!feature)
+                throw new Error(
+                    `Bad initialization of feature '${urlParams.featureName}'`
+                )
             return feature as FeatureCallback
         } catch (error: any) {
-            throw new Error(`Feature '${urlParams.featureName}' not found !`)
+            const errorMessage: string = error.message
+            if (errorMessage.startsWith('Unknown variable dynamic import')) {
+                throw new Error(`Feature '${urlParams.featureName}' not found`)
+            }
+            throw new Error(error.message)
         }
     }
 
@@ -57,11 +64,12 @@ export function create(container: HTMLElement) {
     }
 
     async function initFeature(feature: FeatureCallback) {
-        if (!urlParams.clientId) throw new Error('Missing client parameter !')
+        if (!urlParams.clientId)
+            throw new Error("Missing 'client_id' parameter")
 
         await Api.init(urlParams.featureName!, urlParams.clientId!)
 
-        const initialState = await Api.getFeatureState()
+        const initialState = await Api.featureState()
         insertFeature(feature(urlParams.initialRoute!, initialState))
     }
 

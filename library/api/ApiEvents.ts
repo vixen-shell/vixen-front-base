@@ -1,5 +1,4 @@
 import type {
-    EventData as Data,
     Output,
     Input,
     EventListenerCallback,
@@ -9,6 +8,7 @@ import type {
 export class ApiEvents {
     private _webSocket: WebSocket
     private _listeners: EventListeners = {
+        LOG: [],
         UPDATE_STATE: [],
     }
 
@@ -22,16 +22,17 @@ export class ApiEvents {
     }
 
     private _handleInputs(event: Input.Event) {
-        switch (event.id) {
-            case 'UPDATE_STATE': {
-                if (event.data) {
-                    this._listeners[event.id].forEach((listener) => {
-                        listener(event.data as Data.StateItem)
-                    })
-                }
-                break
+        if (event.id in this._listeners) {
+            if (event.data) {
+                this._listeners[event.id].forEach((listener) => {
+                    listener(event.data)
+                })
             }
         }
+    }
+
+    hasListeners(eventId: Input.Ids) {
+        return this._listeners[eventId].length !== 0
     }
 
     addListener(eventId: Input.Ids, callback: EventListenerCallback) {

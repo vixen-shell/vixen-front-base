@@ -4,7 +4,9 @@ import { RouterProvider, RouterRender } from '../router'
 import React, { useEffect } from 'react'
 import initFeature from './initFeature'
 
-const Feature: React.FC<{ initialRoute: string }> = ({ initialRoute }) => {
+const FeatureRender: React.FC<{ initialRoute: string }> = ({
+    initialRoute,
+}) => {
     useEffect(initFeature, [])
 
     return (
@@ -16,4 +18,4 @@ const Feature: React.FC<{ initialRoute: string }> = ({ initialRoute }) => {
     )
 }
 
-export default Feature
+export default FeatureRender
