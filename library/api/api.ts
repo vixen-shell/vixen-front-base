@@ -1,7 +1,5 @@
-import type { EventData } from './eventTypes'
-
 import { ApiRoutes } from './ApiRoutes'
-import { ApiEvents } from './ApiEvents'
+import { ApiEvents, EventData } from './ApiEvents'
 import { GlobalStateType } from '../state'
 
 function $GET<T>(route: string, dataKey: string): () => Promise<T> {
@@ -28,6 +26,53 @@ function $GET<T>(route: string, dataKey: string): () => Promise<T> {
         }
     }
     throw new Error('Api not initialized')
+}
+
+class Logger {
+    private static _logListener: boolean = false
+
+    private static get logListener() {
+        return Logger._logListener
+    }
+
+    private static set logListener(value: boolean) {
+        const setLogListener = async (value: boolean) => {
+            const logListenerState = $GET<boolean>(
+                Api.routes.FEATURE_LOG_LISTENER,
+                'log_listener'
+            )
+            const toggleLogListener = $GET<boolean>(
+                Api.routes.FEATURE_LOG_LISTENER_TOGGLE,
+                'log_listener'
+            )
+            if ((await logListenerState()) !== value) {
+                await toggleLogListener()
+            }
+        }
+
+        setLogListener(value)
+        Logger._logListener = value
+    }
+
+    static async log(log: EventData.Log) {
+        Api.events.send({ id: 'LOG', data: log })
+    }
+
+    static get logs() {
+        return $GET<EventData.Log[]>(Api.routes.LOGS, 'logs')
+    }
+
+    static addListener(callback: (data: EventData.Log) => void) {
+        if (!Logger.logListener) Logger.logListener = true
+        Api.events.addListener('LOG', callback)
+    }
+
+    static removeListener(callback: (data: EventData.Log) => void) {
+        Api.events.removeListener('LOG', callback)
+        if (!Api.events.hasListeners('LOG') && Logger.logListener) {
+            Logger.logListener = false
+        }
+    }
 }
 
 export class Api {
@@ -60,7 +105,7 @@ export class Api {
         throw new Error('Api not initialized')
     }
 
-    private static get routes() {
+    static get routes() {
         if (Api._routes) return Api._routes
         throw new Error('Api not initialized')
     }
@@ -69,74 +114,5 @@ export class Api {
         return $GET<GlobalStateType>(Api.routes.FEATURE_STATE, 'state')
     }
 
-    static Logger = class {
-        private static _logListener: boolean = false
-
-        private static get logListener() {
-            return Api.Logger._logListener
-        }
-
-        private static set logListener(value: boolean) {
-            const setLogListener = async (value: boolean) => {
-                const logListenerState = $GET<boolean>(
-                    Api.routes.FEATURE_LOG_LISTENER,
-                    'log_listener'
-                )
-                const toggleLogListener = $GET<boolean>(
-                    Api.routes.FEATURE_LOG_LISTENER_TOGGLE,
-                    'log_listener'
-                )
-                if ((await logListenerState()) !== value) {
-                    await toggleLogListener()
-                }
-            }
-
-            setLogListener(value)
-            Api.Logger._logListener = value
-        }
-
-        static async log(log: EventData.Log) {
-            Api.events.send({ id: 'LOG', data: log })
-        }
-
-        static get logs() {
-            return $GET<EventData.Log[]>(Api.routes.LOGS, 'logs')
-        }
-
-        static addListener(callback: (data: EventData.Log) => void) {
-            if (!Api.Logger.logListener) Api.Logger.logListener = true
-            Api.events.addListener('LOG', callback)
-        }
-
-        static removeListener(callback: (data: EventData.Log) => void) {
-            Api.events.removeListener('LOG', callback)
-            if (!Api.events.hasListeners('LOG') && Api.Logger.logListener) {
-                Api.Logger.logListener = false
-            }
-        }
-    }
-
-    // static get logs() {
-    //     return {
-    //         get: $GET<EventData.Log[]>(Api.routes.LOGS, 'logs'),
-
-    //         isListening: $GET<boolean>(
-    //             Api.routes.FEATURE_LOG_LISTENER,
-    //             'log_listener'
-    //         ),
-
-    //         toggleListening: $GET<boolean>(
-    //             Api.routes.FEATURE_LOG_LISTENER_TOGGLE,
-    //             'log_listener'
-    //         ),
-
-    //         addListener: (callback: (data: EventData.Log) => void) => {
-    //             Api.events.addListener('LOG', callback)
-    //         },
-
-    //         removeListener: (callback: (data: EventData.Log) => void) => {
-    //             Api.events.removeListener('LOG', callback)
-    //         },
-    //     }
-    // }
+    static Logger = Logger
 }

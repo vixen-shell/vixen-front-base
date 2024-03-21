@@ -1,4 +1,4 @@
-import { ErrorFrame } from '@vixen-front/ui'
+import { ErrorFrame } from '../ui'
 import React, { createContext, useContext, useState } from 'react'
 
 export type RouteItemsType = { [key: string]: JSX.Element }

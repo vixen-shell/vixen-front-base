@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { ErrorFrame } from '@vixen-front/ui'
+import { ErrorFrame } from '../ui'
 import { GlobalStateType } from '../state'
 import { Api } from '../api'
 

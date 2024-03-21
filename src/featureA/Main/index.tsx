@@ -1,13 +1,12 @@
-import { Feature } from '../../__library'
-import { Frame } from '@vixen-front/ui'
+import { Feature, ui } from '../../__library'
 
 export default function Main() {
     const { getStateItem, setStateItem, saveState } = Feature.Use.State()
     const { logHistory, latestLog } = Feature.Use.LogHistory()
 
     return (
-        <Frame direction="column" padding={20} gap={20}>
-            <Frame height={{ ratio: 100 }} gap={20}>
+        <ui.Frame direction="column" padding={20} gap={20}>
+            <ui.Frame height={{ ratio: 100 }} gap={20}>
                 <p>Main Route from feature A!</p>
                 <p>Hello Noha!</p>
                 <p>{getStateItem('string')}</p>
@@ -24,7 +23,7 @@ export default function Main() {
                 </button>
                 <button onClick={() => saveState()}>Save State</button>
 
-                <Frame
+                <ui.Frame
                     height={500}
                     justifyContent="flex-start"
                     alignItems="flex-start"
@@ -37,7 +36,7 @@ export default function Main() {
                             <p key={i}>{`[${item.level}]: ${item.purpose}`}</p>
                         ))
                         .reverse()}
-                </Frame>
+                </ui.Frame>
 
                 <p>{latestLog?.purpose}</p>
 
@@ -54,12 +53,12 @@ export default function Main() {
                         }
                     }}
                 />
-            </Frame>
-            <Frame height={200}>
+            </ui.Frame>
+            <ui.Frame height={200}>
                 <Feature.Link route="test">
                     Click to get Test Route ...
                 </Feature.Link>
-            </Frame>
-        </Frame>
+            </ui.Frame>
+        </ui.Frame>
     )
 }

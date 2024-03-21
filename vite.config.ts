@@ -18,12 +18,7 @@ export default defineConfig({
             formats: ['es'],
         },
         rollupOptions: {
-            external: [
-                'react',
-                'react-dom',
-                'react/jsx-runtime',
-                '@vixen-front/ui',
-            ],
+            external: ['react', 'react-dom', 'react/jsx-runtime'],
             input: Object.fromEntries(
                 glob
                     .sync('library/**/!(*.d).{ts,tsx}')

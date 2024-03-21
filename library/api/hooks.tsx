@@ -1,7 +1,6 @@
+import type { EventData } from './ApiEvents'
 import { useEffect, useRef, useState } from 'react'
 import { Api } from './api'
-
-import type { EventData } from './eventTypes'
 
 const useLogListener = (): {
     logListening: boolean
